@@ -1,0 +1,32 @@
+{
+  "name": "Craft Cost Ledger — Etsy Pricing Calculator",
+  "short_name": "Cost Ledger",
+  "description": "A tailor's-ledger style pricing calculator for handmade sellers. Work out true cost, Etsy fees, and profit margin on any product.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F3EEE3",
+  "theme_color": "#262421",
+  "categories": ["business", "productivity", "shopping"],
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

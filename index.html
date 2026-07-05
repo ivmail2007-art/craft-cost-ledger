@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Craft Cost Ledger — Etsy Pricing Calculator</title>
+<meta name="description" content="A tailor's-ledger style pricing calculator for handmade sellers. Work out true cost, Etsy fees, and profit margin on any product.">
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#262421">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cost Ledger">
+<link rel="icon" href="assets/icon-192.png">
+
+<style>
+  :root{
+    --paper:#F3EEE3;
+    --paper-line:#E1D9C4;
+    --card:#FBF9F3;
+    --ink:#262421;
+    --ink-soft:#6B6558;
+    --brass:#A6803E;
+    --brass-soft:#D8C79C;
+    --thread-red:#B23A32;
+    --thread-teal:#3C6E62;
+    --thread-teal-soft:#DCE9E5;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      linear-gradient(var(--paper), var(--paper)) ,
+      repeating-linear-gradient(0deg, transparent 0 27px, var(--paper-line) 27px 28px);
+    background-blend-mode:normal;
+    color:var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    padding-bottom:40px;
+  }
+  .num{ font-family: "SFMono-Regular", "SF Mono", Consolas, "Liberation Mono", Menlo, monospace; }
+  .serif{ font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "URW Palladio L", Georgia, serif; }
+
+  .wrap{ max-width:460px; margin:0 auto; padding:0 18px; }
+
+  /* ---------- Header ---------- */
+  header{ padding:34px 0 18px; text-align:center; }
+  .eyebrow{
+    font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--brass); font-weight:700; margin-bottom:10px;
+  }
+  h1.serif{
+    font-size:30px; margin:0 0 6px; letter-spacing:.01em; font-weight:700;
+    color:var(--ink);
+  }
+  header p{ margin:0; color:var(--ink-soft); font-size:13.5px; }
+
+  .tape-rule{
+    height:14px; margin:20px 0 4px; position:relative;
+    background-image: repeating-linear-gradient(
+      90deg, var(--brass) 0, var(--brass) 1.5px, transparent 1.5px, transparent 12px
+    );
+    background-position: bottom;
+    background-size: 100% 100%;
+    opacity:.55;
+  }
+
+  /* ---------- Mode tabs ---------- */
+  .tabs{ display:flex; gap:8px; margin:22px 0 18px; }
+  .tab{
+    flex:1; text-align:center; padding:11px 6px; cursor:pointer;
+    border:1.5px solid var(--ink); border-radius:8px;
+    font-size:12.5px; font-weight:600; letter-spacing:.01em;
+    background:transparent; color:var(--ink-soft);
+    transition:all .15s ease;
+  }
+  .tab.active{ background:var(--ink); color:var(--paper); }
+
+  /* ---------- Cards ---------- */
+  .card{
+    background:var(--card);
+    border:1px solid var(--paper-line);
+    border-radius:var(--radius);
+    padding:20px 18px 6px;
+    margin-bottom:18px;
+    box-shadow: 0 1px 0 rgba(38,36,33,0.04);
+  }
+  .card h2{
+    font-size:11px; text-transform:uppercase; letter-spacing:.12em;
+    color:var(--brass); font-weight:700; margin:0 0 4px;
+  }
+  .field{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:13px 0; border-bottom:1px dashed var(--paper-line);
+    gap:14px;
+  }
+  .field:last-child{ border-bottom:none; }
+  .field label{ font-size:13.5px; color:var(--ink); flex:1; line-height:1.35; }
+  .field .hint{ display:block; font-size:11px; color:var(--ink-soft); margin-top:2px; }
+  .input-wrap{
+    position:relative; width:112px; flex-shrink:0;
+  }
+  .input-wrap.wide{ width:88px; }
+  .input-wrap .prefix{
+    position:absolute; left:10px; top:50%; transform:translateY(-50%);
+    color:var(--ink-soft); font-size:13px; pointer-events:none;
+  }
+  .input-wrap .suffix{
+    position:absolute; right:10px; top:50%; transform:translateY(-50%);
+    color:var(--ink-soft); font-size:13px; pointer-events:none;
+  }
+  input[type=number]{
+    width:100%; padding:9px 10px; font-size:14px;
+    border:1px solid var(--paper-line); border-radius:8px;
+    background:#fff; color:var(--ink);
+    text-align:right;
+    font-family:inherit;
+  }
+  input[type=number].has-prefix{ padding-left:20px; }
+  input[type=number].has-suffix{ padding-right:22px; }
+  input[type=number]:focus{ outline:none; border-color:var(--brass); box-shadow:0 0 0 3px var(--brass-soft); }
+  input[type=number]::-webkit-outer-spin-button,
+  input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+  input[type=number]{ -moz-appearance:textfield; }
+
+  .toggle-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 0 16px;
+  }
+  .toggle-row .t-label{ font-size:13.5px; color:var(--ink); }
+  .toggle-row .t-hint{ font-size:11px; color:var(--ink-soft); display:block; margin-top:2px; }
+  .switch{ position:relative; width:42px; height:24px; flex-shrink:0; }
+  .switch input{ opacity:0; width:0; height:0; }
+  .slider{
+    position:absolute; cursor:pointer; inset:0; background:var(--paper-line);
+    border-radius:24px; transition:.15s;
+  }
+  .slider:before{
+    content:""; position:absolute; height:18px; width:18px; left:3px; top:3px;
+    background:#fff; border-radius:50%; transition:.15s;
+    box-shadow:0 1px 2px rgba(0,0,0,.25);
+  }
+  .switch input:checked + .slider{ background:var(--thread-red); }
+  .switch input:checked + .slider:before{ transform:translateX(18px); }
+
+  /* ---------- Perforation ---------- */
+  .perforation{
+    height:16px; margin:6px 0 20px; position:relative;
+    background-image: radial-gradient(circle, var(--paper) 3px, transparent 3.5px);
+    background-size:16px 16px;
+    background-position:0 center;
+    border-top:1px dashed var(--ink-soft);
+    opacity:.6;
+  }
+
+  /* ---------- Results (ledger receipt) ---------- */
+  .receipt{
+    background:var(--ink); color:var(--paper);
+    border-radius:var(--radius);
+    padding:26px 22px 20px;
+    position:relative;
+    overflow:hidden;
+  }
+  .receipt .eyebrow2{
+    font-size:10.5px; text-transform:uppercase; letter-spacing:.14em;
+    color:var(--brass-soft); font-weight:700; margin-bottom:8px;
+  }
+  .receipt .price-row{ display:flex; align-items:baseline; gap:8px; margin-bottom:4px; }
+  .receipt .price{ font-size:40px; font-weight:700; color:#fff; }
+  .receipt .price-tag{ font-size:12px; color:var(--brass-soft); }
+
+  .receipt .sub-note{ font-size:12px; color:#B8B2A2; margin-bottom:18px; }
+
+  .receipt .stats{
+    display:grid; grid-template-columns:1fr 1fr; gap:16px;
+    padding:16px 0; border-top:1px solid rgba(255,255,255,.12);
+    margin-bottom:14px;
+  }
+  .receipt .stats .s-label{ font-size:11px; color:#B8B2A2; display:block; margin-bottom:4px; }
+  .receipt .stats .s-val{ font-size:19px; font-weight:700; }
+  .s-val.pos{ color:#8FD6C4; }
+  .s-val.neg{ color:#E39A94; }
+
+  .fee-list{
+    border-top:1px solid rgba(255,255,255,.12);
+    padding-top:14px; font-size:12.5px;
+  }
+  .fee-list .fee-row{ display:flex; justify-content:space-between; padding:5px 0; color:#DAD5C7; }
+  .fee-list .fee-row.total{ color:#F0AE9F; font-weight:600; }
+  .fee-list .fee-detail{ padding-left:14px; }
+  .fee-list .fee-detail .fee-row{ font-size:11.5px; color:#9C9788; padding:3px 0; }
+  .fee-list .fee-detail .fee-row.amber{ color:#D9B478; }
+
+  footer{ text-align:center; padding:22px 10px 6px; }
+  footer p{ font-size:11px; color:var(--ink-soft); line-height:1.6; margin:0 0 8px; }
+  footer .stitch{
+    width:60px; height:1px; margin:0 auto 14px;
+    background-image: repeating-linear-gradient(90deg, var(--brass) 0 5px, transparent 5px 9px);
+  }
+
+  .install-tip{
+    background:var(--thread-teal-soft); border:1px solid #C3D9D2;
+    border-radius:10px; padding:12px 14px; margin-bottom:18px;
+    font-size:12px; color:var(--thread-teal); line-height:1.5;
+  }
+  .install-tip strong{ display:block; margin-bottom:2px; font-size:12.5px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">For handmade sellers</div>
+    <h1 class="serif">Craft Cost Ledger</h1>
+    <p>Price with confidence. Know your true cost, every Etsy fee, and your real margin — before you hit publish.</p>
+  </header>
+
+  <div class="tape-rule"></div>
+
+  <div class="tabs">
+    <div class="tab active" data-mode="direct">Cost → Price</div>
+    <div class="tab" data-mode="target">Price → Margin</div>
+  </div>
+
+  <div class="install-tip">
+    <strong>💡 Tip: install this as an app</strong>
+    On your phone, open this page in Safari or Chrome → tap Share/Menu → "Add to Home Screen." It'll behave like a real app, even offline.
+  </div>
+
+  <!-- COSTS -->
+  <div class="card">
+    <h2>1 · Cost of the piece</h2>
+
+    <div class="field">
+      <label>Materials<span class="hint">Fabric, trims, findings — per unit</span></label>
+      <div class="input-wrap"><span class="prefix">$</span>
+        <input type="number" step="0.01" id="materials" class="has-prefix" value="12.50">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Inbound shipping<span class="hint">Getting supplies to your workspace</span></label>
+      <div class="input-wrap"><span class="prefix">$</span>
+        <input type="number" step="0.01" id="inboundShipping" class="has-prefix" value="2.00">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Labor<span class="hint">Your time, valued honestly</span></label>
+      <div class="input-wrap"><span class="prefix">$</span>
+        <input type="number" step="0.01" id="labor" class="has-prefix" value="8.00">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Packaging<span class="hint">Boxes, tissue, cards, labels</span></label>
+      <div class="input-wrap"><span class="prefix">$</span>
+        <input type="number" step="0.01" id="packaging" class="has-prefix" value="1.80">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Overheads<span class="hint">Rent, tools, software — per unit share</span></label>
+      <div class="input-wrap"><span class="prefix">$</span>
+        <input type="number" step="0.01" id="overheads" class="has-prefix" value="1.50">
+      </div>
+    </div>
+  </div>
+
+  <!-- PRICING -->
+  <div class="card">
+    <h2>2 · Pricing &amp; marketing</h2>
+
+    <div class="field" id="marginField">
+      <label>Target take-home margin<span class="hint">What you want to keep, after every fee</span></label>
+      <div class="input-wrap wide"><span class="suffix">%</span>
+        <input type="number" step="1" id="desiredMargin" class="has-suffix" value="40">
+      </div>
+    </div>
+
+    <div class="field" id="targetPriceField" style="display:none;">
+      <label>Listing price<span class="hint">The price you're testing on Etsy</span></label>
+      <div class="input-wrap"><span class="prefix">$</span>
+        <input type="number" step="0.01" id="targetPrice" class="has-prefix" value="45.00">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Shipping charged to buyer<span class="hint">Leave at 0 for free shipping</span></label>
+      <div class="input-wrap"><span class="prefix">$</span>
+        <input type="number" step="0.01" id="shippingCharged" class="has-prefix" value="0.00">
+      </div>
+    </div>
+
+    <div class="toggle-row">
+      <div>
+        <span class="t-label">Include Offsite Ads risk</span>
+        <span class="t-hint">Adds the 12–15% fee Etsy may take if it drives the sale</span>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="offsiteAds">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="perforation"></div>
+
+  <!-- RESULTS -->
+  <div class="receipt">
+    <div class="eyebrow2" id="resultsEyebrow">Recommended listing price</div>
+    <div class="price-row">
+      <span class="price num" id="finalPrice">$0.00</span>
+      <span class="price-tag">on Etsy</span>
+    </div>
+    <div class="sub-note">Based on your costs and every fee below.</div>
+
+    <div class="stats">
+      <div>
+        <span class="s-label">Net profit / unit</span>
+        <span class="s-val num" id="netProfit">$0.00</span>
+      </div>
+      <div>
+        <span class="s-label">Real margin</span>
+        <span class="s-val num" id="actualMargin">0.0%</span>
+      </div>
+    </div>
+
+    <div class="fee-list">
+      <div class="fee-row">
+        <span>Cost of goods</span>
+        <span class="num" id="primeCost">$0.00</span>
+      </div>
+      <div class="fee-row total">
+        <span>All Etsy fees combined</span>
+        <span class="num" id="totalFees">–$0.00</span>
+      </div>
+      <div class="fee-detail">
+        <div class="fee-row"><span>· Listing fee</span><span class="num" id="listingFee">$0.20</span></div>
+        <div class="fee-row"><span>· Transaction fee (6.5%)</span><span class="num" id="transactionFee">$0.00</span></div>
+        <div class="fee-row"><span>· Payment processing (~4% + $0.30)</span><span class="num" id="processingFee">$0.00</span></div>
+        <div class="fee-row amber" id="offsiteRow" style="display:none;">
+          <span>· Offsite Ads (15%)</span><span class="num" id="offsiteFee">$0.00</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="stitch"></div>
+    <p>Fee rates reflect Etsy's published global schedule as of this writing. Etsy adjusts rates by marketplace and over time, and your country's VAT or income tax sits on top — check your current rates before you commit to a price.</p>
+    <p>Made for makers who'd rather sew than do spreadsheets.</p>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  var mode = 'direct';
+  var ids = ['materials','inboundShipping','labor','packaging','overheads',
+             'desiredMargin','targetPrice','shippingCharged'];
+  var el = {};
+  ids.forEach(function(id){ el[id] = document.getElementById(id); });
+  var offsiteEl = document.getElementById('offsiteAds');
+
+  function num(v){ var n = parseFloat(v); return isNaN(n) ? 0 : n; }
+
+  function calc(){
+    var materials = num(el.materials.value);
+    var inbound = num(el.inboundShipping.value);
+    var labor = num(el.labor.value);
+    var packaging = num(el.packaging.value);
+    var overheads = num(el.overheads.value);
+    var shippingCharged = num(el.shippingCharged.value);
+    var offsite = offsiteEl.checked;
+
+    var primeCost = materials + inbound + labor + packaging + overheads;
+    var finalPrice;
+
+    if (mode === 'direct') {
+      var marginDec = num(el.desiredMargin.value) / 100;
+      var estFeePct = offsite ? 0.265 : 0.115;
+      var denom = 1 - marginDec - estFeePct;
+      var calcPrice;
+      if (denom <= 0) {
+        calcPrice = primeCost * 2.5;
+      } else {
+        calcPrice = (primeCost + 0.20) / denom;
+      }
+      if (calcPrice < primeCost) calcPrice = primeCost * 2;
+      finalPrice = Math.round(calcPrice * 100) / 100;
+    } else {
+      finalPrice = num(el.targetPrice.value);
+    }
+
+    var totalRevenue = finalPrice + shippingCharged;
+    var listingFee = 0.20;
+    var transactionFee = totalRevenue * 0.065;
+    var processingFee = totalRevenue * 0.04 + 0.30;
+    var offsiteFee = offsite ? finalPrice * 0.15 : 0;
+    var totalFees = listingFee + transactionFee + processingFee + offsiteFee;
+    var netProfit = totalRevenue - primeCost - totalFees;
+    var actualMargin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
+
+    document.getElementById('resultsEyebrow').textContent =
+      mode === 'direct' ? 'Recommended listing price' : 'Financial summary';
+    document.getElementById('finalPrice').textContent = '$' + finalPrice.toFixed(2);
+    document.getElementById('netProfit').textContent = '$' + netProfit.toFixed(2);
+    document.getElementById('netProfit').className = 'stat-fix'; // reset
+    var npEl = document.getElementById('netProfit');
+    npEl.className = 's-val num ' + (netProfit >= 0 ? 'pos' : 'neg');
+    document.getElementById('actualMargin').textContent = actualMargin.toFixed(1) + '%';
+    document.getElementById('primeCost').textContent = '$' + primeCost.toFixed(2);
+    document.getElementById('totalFees').textContent = '–$' + totalFees.toFixed(2);
+    document.getElementById('listingFee').textContent = '$' + listingFee.toFixed(2);
+    document.getElementById('transactionFee').textContent = '$' + transactionFee.toFixed(2);
+    document.getElementById('processingFee').textContent = '$' + processingFee.toFixed(2);
+    document.getElementById('offsiteFee').textContent = '$' + offsiteFee.toFixed(2);
+    document.getElementById('offsiteRow').style.display = offsite ? 'flex' : 'none';
+  }
+
+  ids.forEach(function(id){ el[id].addEventListener('input', calc); });
+  offsiteEl.addEventListener('change', calc);
+
+  var tabs = document.querySelectorAll('.tab');
+  tabs.forEach(function(tab){
+    tab.addEventListener('click', function(){
+      tabs.forEach(function(t){ t.classList.remove('active'); });
+      tab.classList.add('active');
+      mode = tab.getAttribute('data-mode');
+      document.getElementById('marginField').style.display = mode === 'direct' ? 'flex' : 'none';
+      document.getElementById('targetPriceField').style.display = mode === 'target' ? 'flex' : 'none';
+      calc();
+    });
+  });
+
+  calc();
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('service-worker.js').catch(function(){});
+    });
+  }
+})();
+</script>
+</body>
+</html>
