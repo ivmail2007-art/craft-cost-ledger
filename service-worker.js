@@ -2,10 +2,10 @@ const CACHE_NAME = 'craft-cost-ledger-v1';
 const ASSETS = [
   './index.html',
   './manifest.json',
-  './assets/icon-192.png',
-  './assets/icon-512.png',
-  './assets/icon-512-maskable.png',
-  './assets/apple-touch-icon.png'
+  './icon-192.png',
+  './icon-512.png',
+  './icon-512-maskable.png',
+  './apple-touch-icon.png'
 ];
 
 self.addEventListener('install', function (event) {
